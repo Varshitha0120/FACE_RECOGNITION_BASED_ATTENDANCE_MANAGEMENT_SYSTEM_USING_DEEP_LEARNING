@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faculty Attendance System</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #F8FAFC;
+      color: #1E3A8A;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #1E3A8A, #7C3AED);
+      padding: 1.8rem 3rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.4s ease;
+      min-height: 80px;
+    }
+
+    .navbar.scrolled {
+      background: linear-gradient(135deg, #1E40AF, #06B6D4);
+      transform: scale(1.01);
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      color: #FFFFFF;
+      font-size: 2rem;
+      font-weight: bold;
+      text-decoration: none;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 5px #353a4b;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-btn::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: rgba(124, 58, 237, 0.2);
+      top: 0;
+      left: -100%;
+      transition: all 0.4s ease;
+    }
+
+    .nav-btn:hover::after {
+      left: 0;
+    }
+
+    .nav-btn:hover {
+      background-color: rgba(30, 64, 175, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .active {
+      background-color: #BFDBFE;
+      color: #1E3A8A;
+      box-shadow: 0 0 0 0 rgba(191, 219, 254, 0.7);
+    }
+
+    .menu-toggle {
+      display: none;
+      color: #FFFFFF;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-menu {
+        display: none;
+        flex-direction: column;
+        background: #FFFFFF;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        padding: 1rem;
+        border-top: 1px solid #7C3AED;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+
+      .nav-menu.active {
+        display: flex;
+      }
+
+      .nav-btn {
+        text-align: center;
+        padding: 1rem;
+      }
+    }
+
+    .main-content {
+      margin-top: 120px;
+      padding: 60px 20px;
+      text-align: center;
+      background-color: #FFFFFF;
+      border-radius: 12px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+      min-height: calc(100vh - 200px);
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #070608;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 5px #1E3A8A;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 50px;
+      font-size: 2rem;
+      color: #06B6D4;
+      position: relative;
+      display: inline-block;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 4px;
+      background: #06B6D4;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+
+    h3 {
+      margin: 30px 0 15px;
+      color: #7C3AED;
+      font-size: 1.5rem;
+    }
+
+    p, li {
+      margin-top: 10px;
+      font-size: 1.15rem;
+      color: #1E3A8A;
+    }
+
+    .date-time {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+      background-color: greenyellow;
+      color: #040403;
+      padding: 12px 24px;
+      border-radius: 8px;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    /* Responsive table wrapper */
+    .table-container {
+      overflow-x: auto;
+      margin: 30px auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      max-width: 900px;
+    }
+
+    .attendance-table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: separate;
+      border-spacing: 0;
+      background-color: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .attendance-table th {
+      background-color: #06B6D4;
+      color: #ffffff;
+      font-weight: 600;
+      text-align: center;
+      padding: 16px 12px;
+      font-size: 1.05rem;
+    }
+
+    .attendance-table td {
+      padding: 14px 12px;
+      text-align: center;
+      vertical-align: middle;
+      border-bottom: 1px solid #eee;
+    }
+
+    .attendance-table tbody tr:hover {
+      background-color: #EBF4FF;
+      transition: background-color 0.2s ease;
+    }
+
+    .attendance-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Status badges */
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-present {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-late {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status-absent {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Fallback for unknown status */
+    .status-badge:not([class*="status-"]) {
+      background-color: #e2e8f0;
+      color: #475569;
+    }
+
+    footer {
+      background-color: #1E3A8A;
+      color: #FFFFFF;
+      padding: 30px 20px;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .footer-bottom {
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+
+    .token-flow {
+      position: absolute;
+      font-size: 1.2rem;
+      color: #A78BFA;
+      opacity: 0.7;
+      pointer-events: none;
+      z-index: 0;
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) translateX(0); }
+      100% { transform: translateY(-100px) translateX(100px); }
+    }
+  </style>
+</head>
+<body>
+  <div id="tokenFlowContainer"></div>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">Face Attendance System</a>
+      <div class="menu-toggle" id="mobileMenu">☰</div>
+      <div class="nav-menu" id="navMenu">
+        <a href="facultyHome" class="nav-btn"><i class="fas fa-home"></i> Home</a>
+        <a href="studentAttendance" class="nav-btn"><i class="fas fa-users"></i> Student Attendance Records</a>
+        <a href="dayWiseReports" class="nav-btn"><i class="fas fa-chart-bar"></i> Day Wise Reports</a>
+        <a href="log" class="nav-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
+    </div>
+  </nav>
+<div class="main-content">
+  <div class="date-time" id="dateTime"></div>
+
+  <h1>Faculty Attendance System</h1>
+  <p>View detailed attendance records for all students below.</p>
+
+  {% if records %}
+    
+    {% regroup records by date as date_list %}
+
+    {% for date_group in date_list %}
+      <h2>📅 Date: {{ date_group.grouper|date:"d M Y" }}</h2>
+
+      {% regroup date_group.list by period as period_list %}
+
+      {% for period_group in period_list %}
+        <h3>⏰ Period: {{ period_group.grouper }}</h3>
+
+        <div class="table-container">
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Time (IST)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in period_group.list %}
+                <tr>
+                  <td><strong>{{ record.student_id }}</strong></td>
+                  <td>{{ record.timestamp|date:"h:i A" }}</td>
+                  <td>
+                    <span class="status-badge status-{{ record.classification|lower }}">
+                      {{ record.classification }}
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      {% endfor %}
+    {% endfor %}
+
+  {% else %}
+    <p style="text-align:center; font-size:1.3rem; color:#94a3b8; margin:60px 0; font-style:italic;">
+      No attendance records found.
+    </p>
+  {% endif %}
+</div>
+
+
+  <footer>
+    <div class="footer-bottom">
+      © 2025 Face Recognition Attendance | Powered by DeepVision AI
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileMenu = document.getElementById('mobileMenu');
+      const navMenu = document.getElementById('navMenu');
+      const navbar = document.getElementById('navbar');
+      const navLinks = document.querySelectorAll('.nav-btn');
+      const currentPath = window.location.pathname;
+      const tokenFlowContainer = document.getElementById('tokenFlowContainer');
+      const dateTimeElement = document.getElementById('dateTime');
+
+      // Mobile menu toggle
+      mobileMenu.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+      });
+
+      // Highlight active nav link
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath || 
+            (currentPath === '/' && link.getAttribute('href') === 'facultyHome')) {
+          link.classList.add('active');
+        }
+      });
+
+      // Navbar scroll effect
+      window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 10);
+      });
+
+      // Live date & time
+      function updateDateTime() {
+        const now = new Date();
+        const options = {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+          timeZone: 'Asia/Kolkata'
+        };
+        dateTimeElement.textContent = now.toLocaleString('en-US', options) + ' IST';
+      }
+
+      updateDateTime();
+      setInterval(updateDateTime, 1000);
+
+      // Floating tech tokens animation
+      function createTokenFlow() {
+        const phrases = [
+          "🧠 FaceNet Embeddings...",
+          "🎥 Live Detection...",
+          "🧬 CNN Features...",
+          "🔐 Secure Auth...",
+          "📊 Attendance Logs...",
+          "🎓 Faculty Dashboard...",
+          "📸 OpenCV Frames...",
+          "⚙️ Smart Matching...",
+          "🌐 Deep Learning Flow...",
+          "🔍 Real-time Recognition...",
+          "📡 Embedding Distance...",
+          "✅ Verified Presence..."
+        ];
+        const token = document.createElement('div');
+        token.classList.add('token-flow');
+        token.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+        token.style.left = `${Math.random() * 90 + 5}vw`;
+        token.style.animationDuration = `${Math.random() * 10 + 15}s`;
+        token.style.fontSize = `${Math.random() * 0.4 + 1}rem`;
+        tokenFlowContainer.appendChild(token);
+
+        setTimeout(() => {
+          token.remove();
+        }, 25000);
+      }
+
+      setInterval(createTokenFlow, 1000);
+    });
+  </script>
+</body>
+</html>

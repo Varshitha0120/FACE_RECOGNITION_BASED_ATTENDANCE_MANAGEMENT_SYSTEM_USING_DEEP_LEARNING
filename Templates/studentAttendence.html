@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automatic Student Attendance</title>
+  {% load static %}
+
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #F8FAFC;
+      color: #1E3A8A;
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #1E3A8A, #7C3AED);
+      padding: 1.8rem 3rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      color: #FFFFFF;
+      font-size: 2rem;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .nav-btn {
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+    }
+
+    .main-content {
+      margin-top: 120px;
+      padding: 40px 20px;
+      text-align: center;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    video {
+      width: 100%;
+      max-width: 800px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.15);
+    }
+
+    .status-box {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+      height: 220px;
+      overflow-y: auto;
+    }
+
+    .marked { color: green; font-weight: 600; }
+    .already { color: orange; font-weight: 600; }
+  </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">Face Attendance System</a>
+    <div class="nav-menu">
+      <a href="/" class="nav-btn">Home</a>
+      <a href="#" class="nav-btn">Student Attendance</a>
+      <a href="facultyLogin" class="nav-btn">Faculty Login</a>
+      <a href="studentRegister" class="nav-btn">Student Registration</a>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+  <h1>📸 Automatic Student Attendance</h1>
+  <p>Stand in front of the camera. Attendance will be marked automatically.</p>
+
+  {% csrf_token %}
+
+  <video id="video" autoplay playsinline muted></video>
+
+  <div class="status-box" id="logBox">
+    <p><strong>Status:</strong></p>
+  </div>
+</div>
+
+<footer style="margin-top:50px;text-align:center;padding:20px;background:#1E3A8A;color:white;">
+  &copy; 2025 Face Recognition Attendance | DeepVision AI
+</footer>
+
+<script>
+const video = document.getElementById("video");
+const logBox = document.getElementById("logBox");
+
+const canvas = document.createElement("canvas");
+canvas.width = 640;
+canvas.height = 480;
+const ctx = canvas.getContext("2d");
+
+// CSRF helper
+function getCookie(name) {
+  let cookieValue = null;
+  document.cookie.split(";").forEach(cookie => {
+    cookie = cookie.trim();
+    if (cookie.startsWith(name + "=")) {
+      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    }
+  });
+  return cookieValue;
+}
+
+// Start webcam
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => video.srcObject = stream)
+  .catch(() => alert("❌ Camera access denied"));
+
+// Log messages
+function log(msg, cls="") {
+  const p = document.createElement("p");
+  p.textContent = msg;
+  if (cls) p.classList.add(cls);
+  logBox.prepend(p);
+}
+
+// Auto attendance every 2 seconds
+setInterval(() => {
+  if (!video.videoWidth) return;
+
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = canvas.toDataURL("image/jpeg");
+
+  fetch("{% url 'auto_attendance' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    },
+    body: JSON.stringify({ image: imageData })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.results) return;
+
+    data.results.forEach(r => {
+      log(
+  `👤 ${r.student_id} | ${
+    r.status === "Marked" ? "Marked" : "Already registered (this period)"
+  } | Confidence: ${r.confidence}`,
+  r.status === "Marked" ? "marked" : "already"
+);
+
+    });
+  });
+
+}, 2000);
+</script>
+
+</body>
+</html>

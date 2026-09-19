@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faculty Home - Face Recognition Attendance System</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #F8FAFC;
+      color: #1E3A8A;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #1E3A8A, #7C3AED);
+      padding: 1.8rem 3rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.4s ease;
+      min-height: 80px;
+    }
+
+    .navbar.scrolled {
+      background: linear-gradient(135deg, #1E40AF, #06B6D4);
+      transform: scale(1.01);
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      color: #FFFFFF;
+      font-size: 2rem;
+      font-weight: bold;
+      text-decoration: none;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 5px #353a4b;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-btn::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: rgba(124, 58, 237, 0.2);
+      top: 0;
+      left: -100%;
+      transition: all 0.4s ease;
+    }
+
+    .nav-btn:hover::after {
+      left: 0;
+    }
+
+    .nav-btn:hover {
+      background-color: rgba(30, 64, 175, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .active {
+      background-color: #BFDBFE;
+      color: #1E3A8A;
+      box-shadow: 0 0 0 0 rgba(191, 219, 254, 0.7);
+    }
+
+    .menu-toggle {
+      display: none;
+      color: #FFFFFF;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-menu {
+        display: none;
+        flex-direction: column;
+        background: #FFFFFF;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        padding: 1rem;
+        border-top: 1px solid #7C3AED;
+      }
+
+      .nav-menu.active {
+        display: flex;
+      }
+    }
+
+    .main-content {
+      margin-top: 120px;
+      padding: 60px 20px;
+      text-align: center;
+      background-color: #FFFFFF;
+      border-radius: 12px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #070608;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 5px #1E3A8A;
+    }
+
+    h2 {
+      margin-top: 40px;
+      font-size: 1.8rem;
+      color: #06B6D4;
+      position: relative;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      width: 50px;
+      height: 3px;
+      background: #06B6D4;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    p,
+    li {
+      margin-top: 10px;
+      font-size: 1.15rem;
+      color: #1E3A8A;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li::before {
+      content: "📑";
+      margin-right: 8px;
+    }
+
+    footer {
+      background-color: #1E3A8A;
+      color: #FFFFFF;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .footer-bottom {
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+
+    .date-time {
+      font-size: 2.5rem;
+      margin-top: 10px;
+      background-color: greenyellow;
+      color: rgb(4, 4, 3);
+    }
+
+    .token-flow {
+      position: absolute;
+      font-size: 1.2rem;
+      color: #A78BFA;
+      opacity: 0.7;
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="tokenFlowContainer"></div>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a class="nav-logo">Face Attendance System</a>
+      <div class="menu-toggle" id="mobileMenu">☰</div>
+      <div class="nav-menu" id="navMenu">
+        <a href="facultyHome" class="nav-btn"><i class="fas fa-home"></i> Home</a>
+        <a href="studentAttendance" class="nav-btn"><i class="fas fa-users"></i> Student Attendance Records</a>
+        <a href="dayWiseReports" class="nav-btn"><i class="fas fa-sign-out-alt"></i> day wise reports </a>
+
+        <a href="log" class="nav-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="date-time" id="dateTime"></div>
+    
+    <h1>Faculty Dashboard</h1>
+    <p>Welcome to the Faculty Dashboard for the Face Recognition Attendance System.</p>
+
+    <section>
+      <h2><i class="fas fa-chalkboard-teacher"></i> Faculty Tools</h2>
+      <p>Manage student attendance and access reports with ease using the tools below.</p>
+      <ul style="text-align: left; max-width: 1000px; margin: 20px auto;">
+        <li><strong>Home:</strong> Return to this dashboard.</li>
+        <li><strong>Student Attendance:</strong> View and manage attendance records for students.</li>
+        <li><strong>Logout:</strong> Securely sign out of the system.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><i class="fas fa-cogs"></i> System Overview</h2>
+      <p>The system uses advanced facial recognition to automate attendance tracking, providing real-time updates and detailed analytics for faculty.</p>
+    </section>
+
+    <section>
+      <h2><i class="fas fa-rocket"></i> Key Features</h2>
+      <ul style="text-align: left; max-width: 1000px; margin: 20px auto;">
+        <li>Real-time attendance monitoring.</li>
+        <li>Comprehensive attendance reports and analytics.</li>
+        <li>Manual override options for attendance corrections.</li>
+        <li>Secure access to faculty-specific data.</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer>
+    <div class="footer-bottom">
+      © 2025 Face Recognition Attendance | Powered by DeepVision AI
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileMenu = document.getElementById('mobileMenu');
+      const navMenu = document.getElementById('navMenu');
+      const navbar = document.getElementById('navbar');
+      const navLinks = document.querySelectorAll('.nav-btn');
+      const currentPath = window.location.pathname;
+      const tokenFlowContainer = document.getElementById('tokenFlowContainer');
+      const dateTimeElement = document.getElementById('dateTime');
+
+      mobileMenu.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+      });
+
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('active');
+        }
+      });
+
+      window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 10);
+      });
+
+      function updateDateTime() {
+        const now = new Date();
+        const options = {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        };
+        dateTimeElement.textContent = now.toLocaleString('en-US', options);
+      }
+
+      updateDateTime();
+      setInterval(updateDateTime, 1000);
+
+      function createTokenFlow() {
+        const phrases = [
+          "🧠 FaceNet Embeddings...",
+          "🎥 Live Detection...",
+          "🧬 CNN Features...",
+          "🔐 Secure Auth...",
+          "📊 Attendance Logs...",
+          "🎓 Faculty Dashboard...",
+          "📸 OpenCV Frames...",
+          "⚙️ Smart Matching...",
+          "🌐 Deep Learning Flow..."
+        ];
+        const token = document.createElement('div');
+        token.classList.add('token-flow');
+        token.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+        token.style.left = `${Math.random() * 80 + 10}vw`;
+        token.style.top = `${Math.random() * 100}vh`;
+        tokenFlowContainer.appendChild(token);
+
+        setTimeout(() => {
+          token.remove();
+        }, 6000);
+      }
+
+      setInterval(createTokenFlow, 800);
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Face Attendance System</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #F8FAFC;
+      color: #1E3A8A;
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #1E3A8A, #7C3AED);
+      padding: 1.8rem 3rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      color: #FFFFFF;
+      font-size: 2rem;
+      font-weight: bold;
+      text-decoration: none;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .nav-btn:hover {
+      background-color: rgba(30, 64, 175, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .active {
+      background-color: #BFDBFE;
+      color: #1E3A8A;
+    }
+
+    .menu-toggle {
+      display: none;
+      color: #FFFFFF;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-menu {
+        display: none;
+        flex-direction: column;
+        background: #FFFFFF;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        padding: 1rem;
+      }
+
+      .nav-menu.active {
+        display: flex;
+      }
+    }
+
+    .main-content {
+      margin-top: 120px;
+      padding: 60px 20px;
+      text-align: center;
+      background-color: #FFFFFF;
+      border-radius: 12px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #070608;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    p {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #1E3A8A;
+    }
+
+    .status-message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .status-message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-message.failure {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    footer {
+      background-color: #1E3A8A;
+      color: #FFFFFF;
+      padding: 30px 20px;
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .footer-bottom {
+      font-size: 0.95rem;
+    }
+    .date-time {
+      font-size: 2.5rem;
+      margin-top: 10px;
+      background-color: greenyellow;
+      color: rgb(4, 4, 3);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a class="nav-logo">Face Attendance System</a>
+      <div class="menu-toggle" id="mobileMenu">☰</div>
+      <div class="nav-menu" id="navMenu">
+        <a href="/" class="nav-btn active"><i class="fas fa-home"></i> Home</a>
+        <a href="studentLogin" class="nav-btn"><i class="fas fa-user-graduate"></i> Student Attedence</a>
+        <a href="facultyLogin" class="nav-btn"><i class="fas fa-chalkboard-teacher"></i> Faculty Login</a>
+        <a href="studentRegister" class="nav-btn"><i class="fas fa-user-plus"></i>Student Registration</a>
+      </div>
+    </div>
+  </nav>
+  <br><br><br><br><br><br><br><br>
+  <div class="main-content">
+    <div class="date-time" id="dateTime"></div>
+
+    <h1>Welcome to Face Attendance System</h1>
+    <p>Use the navigation menu to mark attendance, register students, or access the faculty dashboard.</p>
+    <div id="statusMessage" class="status-message" style="display: none;"></div>
+  </div>
+  <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+  <footer>
+    <div class="footer-bottom">
+      © 2025 Face Recognition Attendance | Powered by DeepVision AI
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileMenu = document.getElementById('mobileMenu');
+      const navMenu = document.getElementById('navMenu');
+      const navLinks = document.querySelectorAll('.nav-btn');
+      const currentPath = window.location.pathname;
+      const statusMessage = document.getElementById('statusMessage');
+
+      mobileMenu.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+      });
+
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('active');
+        }
+      });
+
+      // Parse URL parameters and display message
+      const urlParams = new URLSearchParams(window.location.search);
+      const status = urlParams.get('status');
+      const studentId = urlParams.get('student_id');
+
+      if (status === 'success' && studentId) {
+        statusMessage.textContent = `Attendance marked for ${decodeURIComponent(studentId)}`;
+        statusMessage.classList.add('success');
+        statusMessage.style.display = 'block';
+      } else if (status === 'failure') {
+        statusMessage.textContent = 'Face not recognized';
+        statusMessage.classList.add('failure');
+        statusMessage.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
